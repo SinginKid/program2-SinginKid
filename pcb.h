@@ -11,7 +11,6 @@ private:
   int cpu_time;
 public:
   pcb();
-  pcb(int pid, int val);
   ~pcb();
   int get_pID();
   int get_priority();
@@ -23,18 +22,12 @@ public:
   void set_value(int num);
   void incr_rt();
   void incr_ct();
+  void create(int pid, int val, int rt);
 };
 pcb::pcb()
 {
   pID=-1;
   priority=0;
-}
-pcb::pcb(int pid, int val)
-{
-  pID = pid;
-  priority = 0;
-  value = val;
-  start_time, run_time, cpu_time = 0;
 }
 pcb::~pcb(){
 
@@ -78,5 +71,13 @@ void pcb::incr_rt()
 void pcb::incr_ct()
 {
   cpu_time++;
+}
+void pcb::create(int pid, int val, int rt)
+{
+  pID = pid;
+  priority = 0;
+  value = val;
+  start_time, cpu_time = 0;
+  run_time = rt;
 }
 #endif

@@ -18,7 +18,7 @@ main()
   cout << "I am currently running" << endl;
   int max = 100, i, pid;
   //Will be the pipe for communication to scheduler.cpp
-  int mcpipe[2], status;
+  int mcpipe[2], status, num;
   char mc0[10], mc1[10];
   char read_buffer[BUFFER_SIZE];
   char test;
@@ -50,29 +50,30 @@ main()
         sleep(2);
         cout << "CMDR: Writing case S" << endl;
         write(mcpipe[WRITE_END], &test, sizeof(char));
+        cout <<"CMDR: sent\n";
         for(int i = 0; i < 3; i++)
         {
-          cin >> read_buffer;
-          cout << "I just got " << read_buffer << " from the command line" << endl;
-          cout << "Im piping: " << read_buffer << endl;
-          write(mcpipe[WRITE_END], read_buffer, BUFFER_SIZE);
+          cout <<"CMDR: i = " <<i<<endl;
+          cin >> num;
+          cout << "Im piping: " << num << endl;
+          write(mcpipe[WRITE_END], &num, sizeof(int));
         }
         break;
         case 'B':
         sleep(2);
         cout << "Writing case B" << endl;
         write(mcpipe[WRITE_END], &test, sizeof(char));
-        cin >> read_buffer;
-        cout << "Im piping: " << read_buffer << endl;
-        write(mcpipe[WRITE_END], read_buffer, BUFFER_SIZE);
+        cin >> num;
+        cout << "Im piping: " << num << endl;
+        write(mcpipe[WRITE_END], &num, sizeof(int));
         break;
         case 'U':
         sleep(2);
         cout << "Writing case U" << endl;
         write(mcpipe[WRITE_END], &test, sizeof(char));
-        cin >> read_buffer;
-        cout << "Im piping: " << read_buffer << endl;
-        write(mcpipe[WRITE_END], read_buffer, BUFFER_SIZE);
+        cin >> num;
+        cout << "Im piping: " << num << endl;
+        write(mcpipe[WRITE_END], &num, sizeof(int));
         break;
         case 'Q':
         sleep(2);
@@ -83,17 +84,14 @@ main()
         sleep(2);
         cout << "Writing case C" << endl;
         write(mcpipe[WRITE_END], &test, sizeof(char));
-        for(int i = 0; i < 2; i++)
-        {
-          cin >> read_buffer;
-          cout << "Im piping: " << read_buffer << endl;
-          write(mcpipe[WRITE_END], read_buffer, BUFFER_SIZE);
-        }
+          cin >> test;
+          cout << "Im piping: " << test << endl;
+          write(mcpipe[WRITE_END], &test, sizeof(char));
         break;
         case 'P':
         sleep(2);
         cout << "Writing case P" << endl;
-        write(mcpipe[WRITE_END], &test, 1);
+        write(mcpipe[WRITE_END], &test, sizeof(char));
         break;
         case 'T':
         sleep(2);
