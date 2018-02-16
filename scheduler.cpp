@@ -1,13 +1,12 @@
 #include "pcb.h"
 #include "QueueArray.h"
-#include <vector>
 #include <cstdio>
 #include <cstdlib>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <iostream>
-#include <fstream>
+#include <cmath>
 #include <string>
 #include <queue>
 #include <iomanip>
@@ -18,16 +17,43 @@ using namespace std;
 #define WRITE_END 1
 #define PRIORITY_LEVELS 4
 
+/*Method that creates a new process. This new process
+is placed onto the pcb_table, then it checks if the
+running process is null. If it is, then the process is
+set as running and if not, it is pushed onto the ready
+QueueArray with priority 0.*/
 void newProcess(int pid, int val, int run_time);
+/*Method that blocks the current running process. It
+stores the pID in the correct priority of the given ResourceID.
+Then it will set a new running process*/
 void block(int rid);
+/*Method that unblocks the next process in the resource rid
+given. It pushes this pid into the ready QueueArray based
+on priority, then we check if running is NULL. If it is,
+then we Dequeue() the ready QueueArray*/
 void unblock(int rid);
-void timeIncr();
-void change(char cmd, int num);
-void print();
-void turnaround();
 
+void timeIncr();
+/*Method that does a simple computation to the current
+running pcb. The incoming char changes what operation is
+performed (+-/*). After the operation is finished running is
+updated and total number of complete processes is updated*/
+void change(char cmd, int num);
+/*Method that prints out the state of the scheduler
+including time running, current running process,
+blocked processes, and ready processes*/
+void print();
+/*Method that calculated the average turnaround time by adding
+all process turnaround times and dividing by processes complete*/
+void turnaround();
+void setRunning();
+/*Variable that acts as the total time the scheduler has been
+running*/
 int time1 = 0;
-int processesFinished = 0;
+//Variable that keeps track of processes finished
+double processesFinished = 0;
+//Variable that keeps track of totalTurnaround time
+double totalTurn = 0;
 //table of pcb's to be managed by the process scheduler
 pcb pcb_table[100];
 //queueArray that acts as the ReadyState, list of queues
@@ -35,7 +61,7 @@ pcb pcb_table[100];
 QueueArray <int> ready(PRIORITY_LEVELS);
 //queueArray that acts as the BlockedState, holds processes
 //that are using resources, when finished, it places the processes
-//back into ReadyState.int * running;
+//back into ReadyState.
 QueueArray <int> r0(PRIORITY_LEVELS);
 QueueArray <int> r1(PRIORITY_LEVELS);
 QueueArray <int> r2(PRIORITY_LEVELS);
@@ -45,7 +71,6 @@ QueueArray <int> r2(PRIORITY_LEVELS);
 pcb * running = NULL;
 
 main(int argc, char *argv[]){
-  cout << "PMAN: I am in the main and running!" << endl;
   int mcpipe[2];
 
   mcpipe[READ_END] = atoi(argv[1]);
@@ -56,10 +81,8 @@ main(int argc, char *argv[]){
   int check, pid, value, run_time, rid;
 
   close(mcpipe[WRITE_END]);
-  cout <<"PMAN: running\n";
   do{
     check = read(mcpipe[READ_END], &letter, sizeof(char));
-    cout << "PMAN: I just read " << letter << endl;
     if(check == 0)
     {
       cout << "PMAN: I finished reading! Now exiting..." << endl;
@@ -104,10 +127,11 @@ main(int argc, char *argv[]){
   }while(letter != 'T');
 
   close(mcpipe[READ_END]);
+  return 0;
 }
 void newProcess(int pid, int val, int run_time)
 {
-  pcb_table[pid].create(pid, val, run_time);
+  pcb_table[pid].create(pid, val, run_time, time1);
   if(running == NULL)
   {
     running = &pcb_table[pid];
@@ -133,15 +157,7 @@ void block(int rid)
   {
     running -> set_priority((running -> get_priority()) - 1);
   }
-  int check = ready.Dequeue();
-  if(check == 0)
-  {
-    running = NULL;
-  }
-  else
-  {
-    running = &pcb_table[check];
-  }
+  setRunning();
 }
 void unblock(int rid)
 {
@@ -170,28 +186,24 @@ void timeIncr()
 {
   time1++;
   running->incr_ct();
-  if(running->get_priority() == 0 && running -> get_ct() == 1)
+  if(running -> get_ct() == running -> get_rt())
   {
-    running -> set_priority(running -> get_priority() + 1);
-    ready.Enqueue(running -> get_pID(), running -> get_priority());
-    running = &pcb_table[ready.Dequeue()];
+    processesFinished++;
+    totalTurn += running -> get_ct();
+    setRunning();
+    return;
   }
-  else if(running -> get_priority() == 1 && running -> get_ct() == 2)
+  for(int i = 0; i < PRIORITY_LEVELS; i++)
   {
-    running -> set_priority(running -> get_priority() + 1);
-    ready.Enqueue(running -> get_pID(), running -> get_priority());
-    running = &pcb_table[ready.Dequeue()];
-  }
-  else if(running -> get_priority() == 2 && running -> get_ct() == 4)
-  {
-    running -> set_priority(running -> get_priority() + 1);
-    ready.Enqueue(running -> get_pID(), running -> get_priority());
-    running = &pcb_table[ready.Dequeue()];
-  }
-  else if(running -> get_priority() == 3 && running -> get_ct() == 8)
-  {
-    ready.Enqueue(running -> get_pID(), running -> get_priority());
-    running = &pcb_table[ready.Dequeue()];
+    if(running -> get_priority() == i && running -> get_ct() == pow(2, i))
+    {
+      if(running -> get_priority() != 3)
+      {
+        running -> set_priority(running -> get_priority() + 1);
+      }
+        ready.Enqueue(running -> get_pID(), running -> get_priority());
+        setRunning();
+    }
   }
 }
 void change(char cmd, int num)
@@ -331,5 +343,18 @@ void print()
 }
 void turnaround()
 {
-  return;
+  double avgTurn = totalTurn/processesFinished;
+  cout << "The average Turnaround Time: " << avgTurn << endl;
+}
+void setRunning()
+{
+  int check = ready.Dequeue();
+  if(check == 0)
+  {
+    running = NULL;
+  }
+  else
+  {
+    running = &pcb_table[check];
+  }
 }

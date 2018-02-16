@@ -6,9 +6,9 @@ private:
   int pID;
   int priority;
   int value;
-  int start_time;
+  int start_time; //Time when process was created
   int run_time;
-  int cpu_time;
+  int cpu_time; //Time on processer
 public:
   pcb();
   ~pcb();
@@ -22,7 +22,7 @@ public:
   void set_value(int num);
   void incr_rt();
   void incr_ct();
-  void create(int pid, int val, int rt);
+  void create(int pid, int val, int rt, int time1);
 };
 pcb::pcb()
 {
@@ -72,12 +72,13 @@ void pcb::incr_ct()
 {
   cpu_time++;
 }
-void pcb::create(int pid, int val, int rt)
+void pcb::create(int pid, int val, int rt, int time1)
 {
   pID = pid;
   priority = 0;
   value = val;
-  start_time, cpu_time = 0;
+  cpu_time = 0;
   run_time = rt;
+  start_time = time1;
 }
 #endif
