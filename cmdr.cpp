@@ -43,11 +43,11 @@ main()
     //close the read end of the pipe
     close(mcpipe[READ_END]);
     do{
+      sleep(2);
       cin >> test;
       switch(test)
       {
         case 'S':
-        sleep(2);
         cout << "CMDR: Writing case S" << endl;
         write(mcpipe[WRITE_END], &test, sizeof(char));
         cout <<"CMDR: sent\n";
@@ -60,7 +60,6 @@ main()
         }
         break;
         case 'B':
-        sleep(2);
         cout << "Writing case B" << endl;
         write(mcpipe[WRITE_END], &test, sizeof(char));
         cin >> num;
@@ -68,7 +67,6 @@ main()
         write(mcpipe[WRITE_END], &num, sizeof(int));
         break;
         case 'U':
-        sleep(2);
         cout << "Writing case U" << endl;
         write(mcpipe[WRITE_END], &test, sizeof(char));
         cin >> num;
@@ -76,12 +74,10 @@ main()
         write(mcpipe[WRITE_END], &num, sizeof(int));
         break;
         case 'Q':
-        sleep(2);
         cout << "Writing case Q" << endl;
         write(mcpipe[WRITE_END], &test, sizeof(char));
         break;
         case 'C':
-        sleep(2);
         cout << "Writing case C" << endl;
         write(mcpipe[WRITE_END], &test, sizeof(char));
           cin >> test;
@@ -89,12 +85,10 @@ main()
           write(mcpipe[WRITE_END], &test, sizeof(char));
         break;
         case 'P':
-        sleep(2);
         cout << "Writing case P" << endl;
         write(mcpipe[WRITE_END], &test, sizeof(char));
         break;
         case 'T':
-        sleep(2);
         cout << "Writing case T" << endl;
         write(mcpipe[WRITE_END], &test, sizeof(char));
         break;
