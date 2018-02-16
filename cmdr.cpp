@@ -37,13 +37,12 @@ main()
   }
   else if(pid > 0)
   {
-    cout << "Please enter commands: " << endl;
     //close the read end of the pipe
     close(mcpipe[READ_END]);
     do{
-      sleep(2);
+      sleep(1);
       cin >> test;
-      cout << "CMDR READ: " << test << endl;
+      //cout << "CMDR READ: " << test << endl;
       switch(test)
       {
         case 'S':
@@ -69,7 +68,9 @@ main()
         break;
         case 'C':
         write(mcpipe[WRITE_END], &test, sizeof(char));
-          cin >> num;
+        cin >> test;
+        write(mcpipe[WRITE_END], &test, sizeof(char));
+        cin >> num;
         write(mcpipe[WRITE_END], &num, sizeof(int));
         break;
         case 'P':

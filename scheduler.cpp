@@ -80,7 +80,7 @@ main(int argc, char *argv[]){
   string input;
   int check, pid, value, run_time, rid;
 
-  close(mcpipe[WRITE_END]);
+  // close(mcpipe[WRITE_END]);
   do{
     check = read(mcpipe[READ_END], &letter, sizeof(char));
     if(check == 0)
@@ -99,7 +99,6 @@ main(int argc, char *argv[]){
       read(mcpipe[READ_END], &value, sizeof(int));
       read(mcpipe[READ_END], &run_time, sizeof(int));
       newProcess(pid, value, run_time);
-      timeIncr();
       break;
       case 'B':
       read(mcpipe[READ_END], &rid, sizeof(int));
@@ -125,7 +124,6 @@ main(int argc, char *argv[]){
       break;
     }
   }while(letter != 'T');
-
   close(mcpipe[READ_END]);
   return 0;
 }
@@ -225,18 +223,8 @@ void change(char cmd, int num)
       running -> set_value((running -> get_value()) / num);
       break;
     }
-    int check = ready.Dequeue();
-    if(check == 0)
-    {
-      running = NULL;
-    }
-    else
-    {
-      running = &pcb_table[check];
-    }
-    processesFinished++;
+    timeIncr();
   }
-  return;
 }
 void print()
 {
@@ -257,7 +245,7 @@ void print()
     cout << "There is no running process" << endl << endl;
   }
   cout << "BLOCKED PROCESS:" << endl;
-  if(r0.Qsize(0) == 0 && r0.Qsize(1) == 0 && r0.Qsize(2) && r0.Qsize(3) == 0)
+  if(((r0.Qsize(0) == 0 && r0.Qsize(1) == 0) && (r0.Qsize(2) == 0 && r0.Qsize(3) == 0)))
   {
     cout << "Queue of processes Blocked for resource 0 is empty" << endl;
   }
@@ -278,7 +266,7 @@ void print()
       }
     }
   }
-  if(r1.Qsize(0) == 0 && r1.Qsize(1) == 0 && r1.Qsize(2) && r1.Qsize(3) == 0)
+  if(r1.Qsize(0) == 0 && r1.Qsize(1) == 0 && r1.Qsize(2) == 0 && r1.Qsize(3) == 0)
   {
     cout << "Queue of processes Blocked for resource 1 is empty" << endl;
   }
@@ -299,7 +287,7 @@ void print()
       }
     }
   }
-  if(r2.Qsize(0) == 0 && r2.Qsize(1) == 0 && r2.Qsize(2) && r2.Qsize(3) == 0)
+  if(r2.Qsize(0) == 0 && r2.Qsize(1) == 0 && r2.Qsize(2) == 0 && r2.Qsize(3) == 0)
   {
     cout << "Queue of processes Blocked for resource 2 is empty" << endl;
   }
@@ -320,6 +308,7 @@ void print()
       }
     }
   }
+
   cout << "PROCESSES READY TO RUN:" << endl;
   for(int h = 0; h < PRIORITY_LEVELS; h++){
     if(ready.Qsize(h)!= 0)
